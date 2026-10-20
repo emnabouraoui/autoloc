@@ -1,0 +1,2338 @@
+{
+  "info": {
+    "_postman_id": "d85eca88-2107-448a-aedd-86fac2b9a0be",
+    "name": "AutoLoc API",
+    "description": "End-to-end CRUD, validation and cleanup tests for the AutoLoc Spring Boot API.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "01 - Agences",
+      "item": [
+        {
+          "name": "Create agence",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/agences",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "agences"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"nom\": \"AutoLoc Postman {{$timestamp}}\",\n    \"ville\": \"Tunis\",\n    \"adresse\": \"12 rue de la République\",\n    \"telephone\": \"+216 71 000 000\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "[",
+                  "  \"agenceId\", \"equipementId\", \"vehiculeId\", \"clientId\", \"employeId\",",
+                  "  \"reservationId\", \"contratId\", \"paiementId\", \"maintenanceId\",",
+                  "  \"vehiculeImmatriculation\", \"clientEmail\", \"clientNumPermis\"",
+                  "].forEach(function (key) { pm.collectionVariables.unset(key); });"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 201\", function () { pm.response.to.have.status(201); });",
+                  "const body = pm.response.json();",
+                  "pm.test(\"Returns a numeric idAgence\", function () { pm.expect(body.idAgence).to.be.a(\"number\"); });",
+                  "pm.collectionVariables.set(\"agenceId\", body.idAgence);",
+                  "pm.test(\"nom is correct\", function () { pm.expect(body.nom).to.include(\"AutoLoc Postman\"); });",
+                  "pm.test(\"ville is correct\", function () { pm.expect(body.ville).to.eql(\"Tunis\"); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get agence by id",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/agences/{{agenceId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "agences",
+                "{{agenceId}}"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () { pm.response.to.have.status(200); });",
+                  "const body = pm.response.json();",
+                  "pm.test(\"Returns the created agency\", function () { pm.expect(body.idAgence).to.eql(Number(pm.collectionVariables.get(\"agenceId\"))); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Update agence",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/agences/{{agenceId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "agences",
+                "{{agenceId}}"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"nom\": \"AutoLoc Postman Updated {{$timestamp}}\",\n    \"ville\": \"Sousse\",\n    \"adresse\": \"Avenue Habib Bourguiba\",\n    \"telephone\": \"+216 73 111 222\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () { pm.response.to.have.status(200); });",
+                  "const body = pm.response.json();",
+                  "pm.test(\"ville is correct\", function () { pm.expect(body.ville).to.eql(\"Sousse\"); });",
+                  "pm.test(\"telephone is correct\", function () { pm.expect(body.telephone).to.eql(\"+216 73 111 222\"); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "List agences",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/agences",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "agences"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () { pm.response.to.have.status(200); });",
+                  "const body = pm.response.json();",
+                  "pm.test(\"Returns an array\", function () { pm.expect(body).to.be.an(\"array\"); });",
+                  "pm.test(\"Contains the created agency\", function () { const id = Number(pm.collectionVariables.get(\"agenceId\")); pm.expect(body.some(function (item) { return item.idAgence === id; })).to.be.true; });"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "02 - Equipements",
+      "item": [
+        {
+          "name": "Create equipement",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/equipements",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "equipements"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"libelle\": \"GPS Postman {{$timestamp}}-{{$randomInt}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 201\", function () { pm.response.to.have.status(201); });",
+                  "const body = pm.response.json();",
+                  "pm.test(\"Returns a numeric idEquipement\", function () { pm.expect(body.idEquipement).to.be.a(\"number\"); });",
+                  "pm.collectionVariables.set(\"equipementId\", body.idEquipement);",
+                  "pm.test(\"libelle is correct\", function () { pm.expect(body.libelle).to.include(\"GPS Postman\"); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get equipement by id",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/equipements/{{equipementId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "equipements",
+                "{{equipementId}}"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () { pm.response.to.have.status(200); });",
+                  "const body = pm.response.json();",
+                  "pm.test(\"Returns the created equipement\", function () { pm.expect(body.idEquipement).to.eql(Number(pm.collectionVariables.get(\"equipementId\"))); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Update equipement",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/equipements/{{equipementId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "equipements",
+                "{{equipementId}}"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"libelle\": \"GPS Premium {{$timestamp}}-{{$randomInt}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () { pm.response.to.have.status(200); });",
+                  "const body = pm.response.json();",
+                  "pm.test(\"libelle is correct\", function () { pm.expect(body.libelle).to.include(\"GPS Premium\"); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "List equipements",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/equipements",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "equipements"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () { pm.response.to.have.status(200); });",
+                  "const body = pm.response.json();",
+                  "pm.test(\"Returns an array\", function () { pm.expect(body).to.be.an(\"array\"); });",
+                  "pm.test(\"Contains the created equipement\", function () { const id = Number(pm.collectionVariables.get(\"equipementId\")); pm.expect(body.some(function (item) { return item.idEquipement === id; })).to.be.true; });"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "03 - Vehicules",
+      "item": [
+        {
+          "name": "Create vehicule",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/vehicules",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "vehicules"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"immatriculation\": \"PM-{{$timestamp}}-{{$randomInt}}\",\n    \"marque\": \"Renault\",\n    \"modele\": \"Clio\",\n    \"categorie\": \"CITADINE\",\n    \"tarifJournalier\": 120.5,\n    \"statut\": \"DISPONIBLE\",\n    \"agenceId\": {{agenceId}},\n    \"equipementIds\": [{{equipementId}}]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 201\", function () { pm.response.to.have.status(201); });",
+                  "const body = pm.response.json();",
+                  "pm.test(\"Returns a numeric idVehicule\", function () { pm.expect(body.idVehicule).to.be.a(\"number\"); });",
+                  "pm.collectionVariables.set(\"vehiculeId\", body.idVehicule);",
+                  "pm.collectionVariables.set(\"vehiculeImmatriculation\", body.immatriculation);",
+                  "pm.test(\"Is linked to the created agency\", function () { pm.expect(body.agenceId).to.eql(Number(pm.collectionVariables.get(\"agenceId\"))); });",
+                  "pm.test(\"Has the created equipement\", function () { pm.expect(body.equipements).to.have.lengthOf(1); });",
+                  "pm.test(\"tarifJournalier is correct\", function () { pm.expect(Number(body.tarifJournalier)).to.eql(120.5); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get vehicule by id",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/vehicules/{{vehiculeId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "vehicules",
+                "{{vehiculeId}}"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () { pm.response.to.have.status(200); });",
+                  "const body = pm.response.json();",
+                  "pm.test(\"Returns the created vehicle\", function () { pm.expect(body.idVehicule).to.eql(Number(pm.collectionVariables.get(\"vehiculeId\"))); });",
+                  "pm.test(\"immatriculation is correct\", function () { pm.expect(body.immatriculation).to.include(\"PM-\"); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Update vehicule",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/vehicules/{{vehiculeId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "vehicules",
+                "{{vehiculeId}}"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"immatriculation\": \"{{vehiculeImmatriculation}}\",\n    \"marque\": \"Renault\",\n    \"modele\": \"Clio 5\",\n    \"categorie\": \"CITADINE\",\n    \"tarifJournalier\": 150.0,\n    \"statut\": \"DISPONIBLE\",\n    \"agenceId\": {{agenceId}},\n    \"equipementIds\": [{{equipementId}}]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () { pm.response.to.have.status(200); });",
+                  "const body = pm.response.json();",
+                  "pm.test(\"modele is correct\", function () { pm.expect(body.modele).to.eql(\"Clio 5\"); });",
+                  "pm.test(\"tarifJournalier is correct\", function () { pm.expect(Number(body.tarifJournalier)).to.eql(150.0); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "List vehicules",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/vehicules",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "vehicules"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () { pm.response.to.have.status(200); });",
+                  "const body = pm.response.json();",
+                  "pm.test(\"Returns an array\", function () { pm.expect(body).to.be.an(\"array\"); });",
+                  "pm.test(\"Contains the created vehicle\", function () { const id = Number(pm.collectionVariables.get(\"vehiculeId\")); pm.expect(body.some(function (item) { return item.idVehicule === id; })).to.be.true; });"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "04 - Clients",
+      "item": [
+        {
+          "name": "Create client",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/clients",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "clients"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"nom\": \"Postman\",\n    \"prenom\": \"Client\",\n    \"email\": \"postman.{{$timestamp}}.{{$randomInt}}@autoloc.tn\",\n    \"telephone\": \"+216 20 000 000\",\n    \"numPermis\": \"PERMIS-{{$timestamp}}-{{$randomInt}}\",\n    \"dateInscription\": \"2026-01-15\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 201\", function () { pm.response.to.have.status(201); });",
+                  "const body = pm.response.json();",
+                  "pm.test(\"Returns a numeric idClient\", function () { pm.expect(body.idClient).to.be.a(\"number\"); });",
+                  "pm.collectionVariables.set(\"clientId\", body.idClient);",
+                  "pm.collectionVariables.set(\"clientEmail\", body.email);",
+                  "pm.collectionVariables.set(\"clientNumPermis\", body.numPermis);",
+                  "pm.test(\"email is correct\", function () { pm.expect(body.email).to.include(\"@autoloc.tn\"); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get client by id",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/clients/{{clientId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "clients",
+                "{{clientId}}"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () { pm.response.to.have.status(200); });",
+                  "const body = pm.response.json();",
+                  "pm.test(\"Returns the created client\", function () { pm.expect(body.idClient).to.eql(Number(pm.collectionVariables.get(\"clientId\"))); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Update client",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/clients/{{clientId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "clients",
+                "{{clientId}}"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"nom\": \"Postman\",\n    \"prenom\": \"Client Updated\",\n    \"email\": \"{{clientEmail}}\",\n    \"telephone\": \"+216 20 111 222\",\n    \"numPermis\": \"{{clientNumPermis}}\",\n    \"dateInscription\": \"2026-01-15\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () { pm.response.to.have.status(200); });",
+                  "const body = pm.response.json();",
+                  "pm.test(\"prenom is correct\", function () { pm.expect(body.prenom).to.eql(\"Client Updated\"); });",
+                  "pm.test(\"telephone is correct\", function () { pm.expect(body.telephone).to.eql(\"+216 20 111 222\"); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "List clients",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/clients",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "clients"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () { pm.response.to.have.status(200); });",
+                  "const body = pm.response.json();",
+                  "pm.test(\"Returns an array\", function () { pm.expect(body).to.be.an(\"array\"); });",
+                  "pm.test(\"Contains the created client\", function () { const id = Number(pm.collectionVariables.get(\"clientId\")); pm.expect(body.some(function (item) { return item.idClient === id; })).to.be.true; });"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "05 - Employes",
+      "item": [
+        {
+          "name": "Create employe",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/employes",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "employes"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"nom\": \"Agent\",\n    \"prenom\": \"Postman\",\n    \"role\": \"AGENT\",\n    \"agenceId\": {{agenceId}}\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 201\", function () { pm.response.to.have.status(201); });",
+                  "const body = pm.response.json();",
+                  "pm.test(\"Returns a numeric idEmploye\", function () { pm.expect(body.idEmploye).to.be.a(\"number\"); });",
+                  "pm.collectionVariables.set(\"employeId\", body.idEmploye);",
+                  "pm.test(\"role is correct\", function () { pm.expect(body.role).to.eql(\"AGENT\"); });",
+                  "pm.test(\"Is linked to the created agency\", function () { pm.expect(body.agenceId).to.eql(Number(pm.collectionVariables.get(\"agenceId\"))); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get employe by id",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/employes/{{employeId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "employes",
+                "{{employeId}}"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () { pm.response.to.have.status(200); });",
+                  "const body = pm.response.json();",
+                  "pm.test(\"Returns the created employee\", function () { pm.expect(body.idEmploye).to.eql(Number(pm.collectionVariables.get(\"employeId\"))); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Update employe",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/employes/{{employeId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "employes",
+                "{{employeId}}"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"nom\": \"Agent\",\n    \"prenom\": \"Postman\",\n    \"role\": \"MANAGER\",\n    \"agenceId\": {{agenceId}}\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () { pm.response.to.have.status(200); });",
+                  "const body = pm.response.json();",
+                  "pm.test(\"role is correct\", function () { pm.expect(body.role).to.eql(\"MANAGER\"); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "List employes",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/employes",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "employes"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () { pm.response.to.have.status(200); });",
+                  "const body = pm.response.json();",
+                  "pm.test(\"Returns an array\", function () { pm.expect(body).to.be.an(\"array\"); });",
+                  "pm.test(\"Contains the created employee\", function () { const id = Number(pm.collectionVariables.get(\"employeId\")); pm.expect(body.some(function (item) { return item.idEmploye === id; })).to.be.true; });"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "06 - Reservations",
+      "item": [
+        {
+          "name": "Create reservation",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/reservations",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "reservations"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"dateDebut\": \"2026-11-01\",\n    \"dateFin\": \"2026-11-05\",\n    \"statut\": \"EN_ATTENTE\",\n    \"clientId\": {{clientId}},\n    \"vehiculeId\": {{vehiculeId}}\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 201\", function () { pm.response.to.have.status(201); });",
+                  "const body = pm.response.json();",
+                  "pm.test(\"Returns a numeric idReservation\", function () { pm.expect(body.idReservation).to.be.a(\"number\"); });",
+                  "pm.collectionVariables.set(\"reservationId\", body.idReservation);",
+                  "pm.test(\"statut is correct\", function () { pm.expect(body.statut).to.eql(\"EN_ATTENTE\"); });",
+                  "pm.test(\"Uses the created client and vehicle\", function () { pm.expect(body.clientId).to.eql(Number(pm.collectionVariables.get(\"clientId\"))); pm.expect(body.vehiculeId).to.eql(Number(pm.collectionVariables.get(\"vehiculeId\"))); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get reservation by id",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/reservations/{{reservationId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "reservations",
+                "{{reservationId}}"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () { pm.response.to.have.status(200); });",
+                  "const body = pm.response.json();",
+                  "pm.test(\"Returns the created reservation\", function () { pm.expect(body.idReservation).to.eql(Number(pm.collectionVariables.get(\"reservationId\"))); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Update reservation to CONFIRMEE",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/reservations/{{reservationId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "reservations",
+                "{{reservationId}}"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"dateDebut\": \"2026-11-01\",\n    \"dateFin\": \"2026-11-05\",\n    \"statut\": \"CONFIRMEE\",\n    \"clientId\": {{clientId}},\n    \"vehiculeId\": {{vehiculeId}}\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () { pm.response.to.have.status(200); });",
+                  "const body = pm.response.json();",
+                  "pm.test(\"statut is correct\", function () { pm.expect(body.statut).to.eql(\"CONFIRMEE\"); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "List reservations",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/reservations",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "reservations"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () { pm.response.to.have.status(200); });",
+                  "const body = pm.response.json();",
+                  "pm.test(\"Returns an array\", function () { pm.expect(body).to.be.an(\"array\"); });",
+                  "pm.test(\"Contains the created reservation\", function () { const id = Number(pm.collectionVariables.get(\"reservationId\")); pm.expect(body.some(function (item) { return item.idReservation === id; })).to.be.true; });"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "07 - Contrats",
+      "item": [
+        {
+          "name": "Create contrat",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/contrats",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "contrats"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"dateSignature\": \"2026-10-20\",\n    \"montantTotal\": 600.0,\n    \"valide\": false,\n    \"reservationId\": {{reservationId}}\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 201\", function () { pm.response.to.have.status(201); });",
+                  "const body = pm.response.json();",
+                  "pm.test(\"Returns a numeric idContrat\", function () { pm.expect(body.idContrat).to.be.a(\"number\"); });",
+                  "pm.collectionVariables.set(\"contratId\", body.idContrat);",
+                  "pm.test(\"valide is correct\", function () { pm.expect(body.valide).to.eql(false); });",
+                  "pm.test(\"Is linked to the created reservation\", function () { pm.expect(body.reservationId).to.eql(Number(pm.collectionVariables.get(\"reservationId\"))); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get contrat by id",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/contrats/{{contratId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "contrats",
+                "{{contratId}}"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () { pm.response.to.have.status(200); });",
+                  "const body = pm.response.json();",
+                  "pm.test(\"Returns the created contract\", function () { pm.expect(body.idContrat).to.eql(Number(pm.collectionVariables.get(\"contratId\"))); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Update contrat",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/contrats/{{contratId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "contrats",
+                "{{contratId}}"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"dateSignature\": \"2026-10-20\",\n    \"montantTotal\": 650.0,\n    \"valide\": true,\n    \"reservationId\": {{reservationId}}\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () { pm.response.to.have.status(200); });",
+                  "const body = pm.response.json();",
+                  "pm.test(\"valide is correct\", function () { pm.expect(body.valide).to.eql(true); });",
+                  "pm.test(\"montantTotal is correct\", function () { pm.expect(Number(body.montantTotal)).to.eql(650.0); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "List contrats",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/contrats",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "contrats"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () { pm.response.to.have.status(200); });",
+                  "const body = pm.response.json();",
+                  "pm.test(\"Returns an array\", function () { pm.expect(body).to.be.an(\"array\"); });",
+                  "pm.test(\"Contains the created contract\", function () { const id = Number(pm.collectionVariables.get(\"contratId\")); pm.expect(body.some(function (item) { return item.idContrat === id; })).to.be.true; });"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "08 - Paiements",
+      "item": [
+        {
+          "name": "Create paiement",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/paiements",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "paiements"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"montant\": 200.0,\n    \"datePaiement\": \"2026-10-20T10:00:00\",\n    \"modePaiement\": \"CARTE\",\n    \"contratId\": {{contratId}}\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 201\", function () { pm.response.to.have.status(201); });",
+                  "const body = pm.response.json();",
+                  "pm.test(\"Returns a numeric idPaiement\", function () { pm.expect(body.idPaiement).to.be.a(\"number\"); });",
+                  "pm.collectionVariables.set(\"paiementId\", body.idPaiement);",
+                  "pm.test(\"modePaiement is correct\", function () { pm.expect(body.modePaiement).to.eql(\"CARTE\"); });",
+                  "pm.test(\"Is linked to the created contract\", function () { pm.expect(body.contratId).to.eql(Number(pm.collectionVariables.get(\"contratId\"))); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get paiement by id",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/paiements/{{paiementId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "paiements",
+                "{{paiementId}}"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () { pm.response.to.have.status(200); });",
+                  "const body = pm.response.json();",
+                  "pm.test(\"Returns the created payment\", function () { pm.expect(body.idPaiement).to.eql(Number(pm.collectionVariables.get(\"paiementId\"))); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Update paiement",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/paiements/{{paiementId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "paiements",
+                "{{paiementId}}"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"montant\": 250.0,\n    \"datePaiement\": \"2026-10-21T11:30:00\",\n    \"modePaiement\": \"VIREMENT\",\n    \"contratId\": {{contratId}}\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () { pm.response.to.have.status(200); });",
+                  "const body = pm.response.json();",
+                  "pm.test(\"modePaiement is correct\", function () { pm.expect(body.modePaiement).to.eql(\"VIREMENT\"); });",
+                  "pm.test(\"montant is correct\", function () { pm.expect(Number(body.montant)).to.eql(250.0); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "List paiements",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/paiements",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "paiements"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () { pm.response.to.have.status(200); });",
+                  "const body = pm.response.json();",
+                  "pm.test(\"Returns an array\", function () { pm.expect(body).to.be.an(\"array\"); });",
+                  "pm.test(\"Contains the created payment\", function () { const id = Number(pm.collectionVariables.get(\"paiementId\")); pm.expect(body.some(function (item) { return item.idPaiement === id; })).to.be.true; });"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "09 - Maintenances",
+      "item": [
+        {
+          "name": "Create maintenance",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/maintenances",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "maintenances"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"dateDebut\": \"2026-11-10\",\n    \"dateFin\": \"2026-11-11\",\n    \"description\": \"Maintenance Postman\",\n    \"vehiculeId\": {{vehiculeId}}\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 201\", function () { pm.response.to.have.status(201); });",
+                  "const body = pm.response.json();",
+                  "pm.test(\"Returns a numeric idMaintenance\", function () { pm.expect(body.idMaintenance).to.be.a(\"number\"); });",
+                  "pm.collectionVariables.set(\"maintenanceId\", body.idMaintenance);",
+                  "pm.test(\"dateFin is correct\", function () { pm.expect(body.dateFin).to.eql(\"2026-11-11\"); });",
+                  "pm.test(\"Is linked to the created vehicle\", function () { pm.expect(body.vehiculeId).to.eql(Number(pm.collectionVariables.get(\"vehiculeId\"))); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get maintenance by id",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/maintenances/{{maintenanceId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "maintenances",
+                "{{maintenanceId}}"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () { pm.response.to.have.status(200); });",
+                  "const body = pm.response.json();",
+                  "pm.test(\"Returns the created maintenance\", function () { pm.expect(body.idMaintenance).to.eql(Number(pm.collectionVariables.get(\"maintenanceId\"))); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Update maintenance",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/maintenances/{{maintenanceId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "maintenances",
+                "{{maintenanceId}}"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"dateDebut\": \"2026-11-10\",\n    \"dateFin\": \"2026-11-12\",\n    \"description\": \"Maintenance Postman mise à jour\",\n    \"vehiculeId\": {{vehiculeId}}\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () { pm.response.to.have.status(200); });",
+                  "const body = pm.response.json();",
+                  "pm.test(\"dateFin is correct\", function () { pm.expect(body.dateFin).to.eql(\"2026-11-12\"); });",
+                  "pm.test(\"description is correct\", function () { pm.expect(body.description).to.include(\"mise à jour\"); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "List maintenances",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/maintenances",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "maintenances"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () { pm.response.to.have.status(200); });",
+                  "const body = pm.response.json();",
+                  "pm.test(\"Returns an array\", function () { pm.expect(body).to.be.an(\"array\"); });",
+                  "pm.test(\"Contains the created maintenance\", function () { const id = Number(pm.collectionVariables.get(\"maintenanceId\")); pm.expect(body.some(function (item) { return item.idMaintenance === id; })).to.be.true; });"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "10 - Negative tests",
+      "item": [
+        {
+          "name": "Get missing agence (404)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/agences/999999",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "agences",
+                "999999"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 404\", function () { pm.response.to.have.status(404); });",
+                  "const body = pm.response.json();",
+                  "pm.test(\"message is correct\", function () { pm.expect(body.message).to.include(\"introuvable\"); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get missing vehicule (404)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/vehicules/999999",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "vehicules",
+                "999999"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 404\", function () { pm.response.to.have.status(404); });",
+                  "const body = pm.response.json();",
+                  "pm.test(\"message is correct\", function () { pm.expect(body.message).to.include(\"introuvable\"); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Unknown endpoint (404)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/unknown",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "unknown"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 404\", function () { pm.response.to.have.status(404); });",
+                  "const body = pm.response.json();",
+                  "pm.test(\"message is correct\", function () { pm.expect(body.message).to.include(\"introuvable\"); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Unsupported HTTP method (405)",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/agences",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "agences"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 405\", function () { pm.response.to.have.status(405); });",
+                  "const body = pm.response.json();",
+                  "pm.test(\"message is correct\", function () { pm.expect(body.message).to.include(\"non supportée\"); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Create vehicule with blank immatriculation (400)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/vehicules",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "vehicules"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"immatriculation\": \"\",\n    \"marque\": \"Renault\",\n    \"modele\": \"Clio\",\n    \"categorie\": \"CITADINE\",\n    \"tarifJournalier\": 120.0,\n    \"statut\": \"DISPONIBLE\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 400\", function () { pm.response.to.have.status(400); });",
+                  "const body = pm.response.json();",
+                  "pm.test(\"Returns a field error for immatriculation\", function () { pm.expect(body.fieldErrors).to.have.property(\"immatriculation\"); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Create vehicule with invalid enum (400)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/vehicules",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "vehicules"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"immatriculation\": \"PM-INVALID-{{$timestamp}}\",\n    \"marque\": \"Renault\",\n    \"modele\": \"Clio\",\n    \"categorie\": \"AVION\",\n    \"tarifJournalier\": 120.0,\n    \"statut\": \"DISPONIBLE\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 400\", function () { pm.response.to.have.status(400); });",
+                  "const body = pm.response.json();",
+                  "pm.test(\"message is correct\", function () { pm.expect(body.message).to.include(\"invalide\"); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Duplicate vehicule immatriculation (409)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/vehicules",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "vehicules"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"immatriculation\": \"{{vehiculeImmatriculation}}\",\n    \"marque\": \"Renault\",\n    \"modele\": \"Clio\",\n    \"categorie\": \"CITADINE\",\n    \"tarifJournalier\": 120.0,\n    \"statut\": \"DISPONIBLE\",\n    \"agenceId\": {{agenceId}},\n    \"equipementIds\": [{{equipementId}}]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 409\", function () { pm.response.to.have.status(409); });",
+                  "const body = pm.response.json();",
+                  "pm.test(\"message is correct\", function () { pm.expect(body.message).to.include(\"existe déjà\"); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Duplicate client email (409)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/clients",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "clients"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"nom\": \"Postman\",\n    \"prenom\": \"Duplicate\",\n    \"email\": \"{{clientEmail}}\",\n    \"telephone\": \"+216 20 222 333\",\n    \"numPermis\": \"PERMIS-DUPLICATE-{{$timestamp}}\",\n    \"dateInscription\": \"2026-01-15\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 409\", function () { pm.response.to.have.status(409); });",
+                  "const body = pm.response.json();",
+                  "pm.test(\"message is correct\", function () { pm.expect(body.message).to.include(\"existe déjà\"); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Overlapping reservation (409)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/reservations",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "reservations"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"dateDebut\": \"2026-11-03\",\n    \"dateFin\": \"2026-11-07\",\n    \"statut\": \"EN_ATTENTE\",\n    \"clientId\": {{clientId}},\n    \"vehiculeId\": {{vehiculeId}}\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 409\", function () { pm.response.to.have.status(409); });",
+                  "const body = pm.response.json();",
+                  "pm.test(\"message is correct\", function () { pm.expect(body.message).to.include(\"déjà réservé\"); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Duplicate contract (409)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/contrats",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "contrats"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"dateSignature\": \"2026-10-20\",\n    \"montantTotal\": 600.0,\n    \"valide\": false,\n    \"reservationId\": {{reservationId}}\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 409\", function () { pm.response.to.have.status(409); });",
+                  "const body = pm.response.json();",
+                  "pm.test(\"message is correct\", function () { pm.expect(body.message).to.include(\"existe déjà\"); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Reservation with invalid dates (400)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/reservations",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "reservations"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"dateDebut\": \"2026-11-07\",\n    \"dateFin\": \"2026-11-03\",\n    \"statut\": \"EN_ATTENTE\",\n    \"clientId\": {{clientId}},\n    \"vehiculeId\": {{vehiculeId}}\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 400\", function () { pm.response.to.have.status(400); });",
+                  "const body = pm.response.json();",
+                  "pm.test(\"message is correct\", function () { pm.expect(body.message).to.include(\"date de fin\"); });"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "11 - Cleanup",
+      "item": [
+        {
+          "name": "Delete paiement",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/paiements/{{paiementId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "paiements",
+                "{{paiementId}}"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (!pm.collectionVariables.get(\"paiementId\")) { pm.execution.skipRequest(); }"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 204\", function () { pm.response.to.have.status(204); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Delete contrat",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/contrats/{{contratId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "contrats",
+                "{{contratId}}"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (!pm.collectionVariables.get(\"contratId\")) { pm.execution.skipRequest(); }"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 204\", function () { pm.response.to.have.status(204); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Delete reservation",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/reservations/{{reservationId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "reservations",
+                "{{reservationId}}"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (!pm.collectionVariables.get(\"reservationId\")) { pm.execution.skipRequest(); }"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 204\", function () { pm.response.to.have.status(204); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Delete maintenance",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/maintenances/{{maintenanceId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "maintenances",
+                "{{maintenanceId}}"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (!pm.collectionVariables.get(\"maintenanceId\")) { pm.execution.skipRequest(); }"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 204\", function () { pm.response.to.have.status(204); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Delete vehicule",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/vehicules/{{vehiculeId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "vehicules",
+                "{{vehiculeId}}"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (!pm.collectionVariables.get(\"vehiculeId\")) { pm.execution.skipRequest(); }"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 204\", function () { pm.response.to.have.status(204); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Delete equipement",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/equipements/{{equipementId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "equipements",
+                "{{equipementId}}"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (!pm.collectionVariables.get(\"equipementId\")) { pm.execution.skipRequest(); }"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 204\", function () { pm.response.to.have.status(204); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Delete employe",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/employes/{{employeId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "employes",
+                "{{employeId}}"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (!pm.collectionVariables.get(\"employeId\")) { pm.execution.skipRequest(); }"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 204\", function () { pm.response.to.have.status(204); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Delete client",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/clients/{{clientId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "clients",
+                "{{clientId}}"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (!pm.collectionVariables.get(\"clientId\")) { pm.execution.skipRequest(); }"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 204\", function () { pm.response.to.have.status(204); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Delete agence",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/agences/{{agenceId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "agences",
+                "{{agenceId}}"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (!pm.collectionVariables.get(\"agenceId\")) { pm.execution.skipRequest(); }"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 204\", function () { pm.response.to.have.status(204); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Verify agence is deleted (404)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/agences/{{agenceId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "agences",
+                "{{agenceId}}"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (!pm.collectionVariables.get(\"agenceId\")) { pm.execution.skipRequest(); }"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 404\", function () { pm.response.to.have.status(404); });"
+                ]
+              }
+            }
+          ]
+        }
+      ],
+      "description": "Runs in dependency order so foreign keys stay valid. Requests are skipped if the matching id was never created."
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8080"
+    },
+    {
+      "key": "agenceId",
+      "value": ""
+    },
+    {
+      "key": "equipementId",
+      "value": ""
+    },
+    {
+      "key": "vehiculeId",
+      "value": ""
+    },
+    {
+      "key": "clientId",
+      "value": ""
+    },
+    {
+      "key": "employeId",
+      "value": ""
+    },
+    {
+      "key": "reservationId",
+      "value": ""
+    },
+    {
+      "key": "contratId",
+      "value": ""
+    },
+    {
+      "key": "paiementId",
+      "value": ""
+    },
+    {
+      "key": "maintenanceId",
+      "value": ""
+    },
+    {
+      "key": "vehiculeImmatriculation",
+      "value": ""
+    },
+    {
+      "key": "clientEmail",
+      "value": ""
+    },
+    {
+      "key": "clientNumPermis",
+      "value": ""
+    }
+  ]
+}

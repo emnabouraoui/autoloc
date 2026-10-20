@@ -34,3 +34,16 @@ build/
 
 ### macOS ###
 .DS_Store
+
+### Postman local workspace metadata ###
+.postman/
+postman/collections/
+postman/environments/
+postman/globals/
+postman/documents/
+postman/flows/
+postman/mocks/
+postman/specs/
+
+### Local assignment/spec documents ###
+/Etude de cas_AutoLoc_ASI.pdf
