@@ -11,6 +11,7 @@ The project is built as a layered Spring Boot application and comes with an impo
   - Spring Web
   - Spring Data JPA
   - Bean Validation
+- springdoc-openapi 3.1.1 (Swagger UI / OpenAPI 3)
 - MySQL 8
 - Lombok
 - Maven Wrapper
@@ -28,6 +29,8 @@ The project is built as a layered Spring Boot application and comes with an impo
   - A vehicle under maintenance cannot be reserved
   - Cancelling/terminating a reservation remains possible while the vehicle is under maintenance
 - JPA associations aligned with the case-study model
+- SOLID/GoF design: dedicated vehicle validator, logging service, and Strategy-based pricing
+- Interactive Swagger UI documentation
 - Postman collection: 57 requests, 137 assertions, automatic cleanup
 
 ## Project structure
@@ -38,10 +41,16 @@ src/main/java/tn/esprit/autoloc/
 ├── domain/                  # JPA entities and enums
 ├── repository/              # Spring Data JPA repositories
 ├── service/                 # Business logic
+│   ├── VehiculeValidator.java
+│   ├── JournalisationService.java
+│   └── tarification/        # GoF Strategy implementations
 └── web/
     ├── controller/          # REST controllers
     ├── dto/                 # Request/response DTOs
     └── exception/           # Global error handling
+
+docs/
+└── ATELIER_SOLID_GOF.md     # Design answers and SOLID/GoF rationale
 ```
 
 ## Getting started
@@ -105,6 +114,51 @@ Each resource exposes:
 | `PUT` | `/api/{resource}/{id}` | Update | `200` |
 | `DELETE` | `/api/{resource}/{id}` | Delete | `204` |
 
+### Tarification (Strategy)
+
+| Method | Path | Description |
+|---|---|---|
+| `POST` | `/api/tarifications/calculer` | Calculate a price with a pricing strategy |
+| `GET` | `/api/tarifications/types` | List available pricing strategies |
+
+Supported strategy types:
+
+| Type | Policy |
+|---|---|
+| `standard` | Daily rate × days |
+| `weekend` | 10% discount |
+| `longueDuree` | 20% discount |
+| `entreprise` | 15% discount |
+
+Example:
+
+```bash
+curl -X POST http://localhost:8080/api/tarifications/calculer \
+  -H 'Content-Type: application/json' \
+  -d '{"type":"weekend","tarifJournalier":100,"jours":3}'
+```
+
+Response:
+
+```json
+{
+  "type": "weekend",
+  "tarifJournalier": 100,
+  "jours": 3,
+  "montant": 270.0
+}
+```
+
+## API documentation (Swagger UI)
+
+Once the application is running:
+
+- Swagger UI: **http://localhost:8080/swagger-ui.html**
+- OpenAPI JSON: **http://localhost:8080/v3/api-docs**
+- OpenAPI YAML: **http://localhost:8080/v3/api-docs.yaml**
+
+No additional configuration is required.
+
 ### Example request
 
 ```bash
@@ -158,6 +212,21 @@ Example response:
 | `Reservation ↔ Contrat` | One-to-one |
 | `Contrat → Paiement` | One-to-many |
 
+## Design SOLID & GoF
+
+The vehicle service delegates validation and logging to dedicated components:
+
+- `VehiculeValidator` — business validation rules
+- `JournalisationService` — application logging
+- `VehiculeRepository` — persistence abstraction (Spring Data JPA)
+- `TarificationService` + `StrategieTarification` — Strategy pattern for pricing
+
+Pricing policies are Spring beans injected into a `Map<String, StrategieTarification>`. Adding a policy only requires a new `@Component` implementation; the service does not change. This is the Open/Closed Principle in practice.
+
+Full answers to the design questions, including Factory, ISP, and LSP, are in:
+
+- [`docs/ATELIER_SOLID_GOF.md`](docs/ATELIER_SOLID_GOF.md)
+
 ## Postman tests
 
 The `postman/` folder contains:
@@ -194,8 +263,11 @@ The collection creates its own data, runs the negative tests, and deletes everyt
 ## Verification
 
 ```bash
+./mvnw test
 ./mvnw clean package
 ```
+
+Current unit tests: **13** (vehicle validation and pricing strategies).
 
 The Maven build must pass before running the Postman collection.
 

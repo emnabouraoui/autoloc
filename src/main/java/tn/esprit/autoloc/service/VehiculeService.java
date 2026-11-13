@@ -24,13 +24,19 @@ public class VehiculeService {
     private final VehiculeRepository vehiculeRepository;
     private final AgenceRepository agenceRepository;
     private final EquipementRepository equipementRepository;
+    private final VehiculeValidator vehiculeValidator;
+    private final JournalisationService journalisationService;
 
     public VehiculeService(VehiculeRepository vehiculeRepository,
                            AgenceRepository agenceRepository,
-                           EquipementRepository equipementRepository) {
+                           EquipementRepository equipementRepository,
+                           VehiculeValidator vehiculeValidator,
+                           JournalisationService journalisationService) {
         this.vehiculeRepository = vehiculeRepository;
         this.agenceRepository = agenceRepository;
         this.equipementRepository = equipementRepository;
+        this.vehiculeValidator = vehiculeValidator;
+        this.journalisationService = journalisationService;
     }
 
     public List<VehiculeResponseDTO> findAll() {
@@ -45,6 +51,8 @@ public class VehiculeService {
 
     @Transactional
     public VehiculeResponseDTO create(VehiculeRequestDTO dto) {
+        vehiculeValidator.valider(dto);
+
         String immatriculation = dto.immatriculation().trim();
         if (vehiculeRepository.existsByImmatriculationIgnoreCase(immatriculation)) {
             throw new ConflictException("Un véhicule avec cette immatriculation existe déjà");
@@ -52,11 +60,15 @@ public class VehiculeService {
 
         Vehicule vehicule = new Vehicule();
         apply(vehicule, dto);
-        return VehiculeResponseDTO.from(vehiculeRepository.save(vehicule));
+        Vehicule saved = vehiculeRepository.save(vehicule);
+        journalisationService.journaliserCreationVehicule(saved.getIdVehicule(), saved.getImmatriculation());
+        return VehiculeResponseDTO.from(saved);
     }
 
     @Transactional
     public VehiculeResponseDTO update(Long id, VehiculeRequestDTO dto) {
+        vehiculeValidator.valider(dto);
+
         Vehicule vehicule = getEntity(id);
         String immatriculation = dto.immatriculation().trim();
         if (!vehicule.getImmatriculation().equalsIgnoreCase(immatriculation)
@@ -65,12 +77,18 @@ public class VehiculeService {
         }
 
         apply(vehicule, dto);
-        return VehiculeResponseDTO.from(vehiculeRepository.save(vehicule));
+        Vehicule saved = vehiculeRepository.save(vehicule);
+        journalisationService.journaliserModificationVehicule(saved.getIdVehicule(), saved.getImmatriculation());
+        return VehiculeResponseDTO.from(saved);
     }
 
     @Transactional
     public void delete(Long id) {
-        vehiculeRepository.delete(getEntity(id));
+        Vehicule vehicule = getEntity(id);
+        Long idVehicule = vehicule.getIdVehicule();
+        String immatriculation = vehicule.getImmatriculation();
+        vehiculeRepository.delete(vehicule);
+        journalisationService.journaliserSuppressionVehicule(idVehicule, immatriculation);
     }
 
     private Vehicule getEntity(Long id) {
