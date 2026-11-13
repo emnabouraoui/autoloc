@@ -223,10 +223,6 @@ The vehicle service delegates validation and logging to dedicated components:
 
 Pricing policies are Spring beans injected into a `Map<String, StrategieTarification>`. Adding a policy only requires a new `@Component` implementation; the service does not change. This is the Open/Closed Principle in practice.
 
-Full answers to the design questions, including Factory, ISP, and LSP, are in:
-
-- [`docs/ATELIER_SOLID_GOF.md`](docs/ATELIER_SOLID_GOF.md)
-
 ## Postman tests
 
 The `postman/` folder contains:
