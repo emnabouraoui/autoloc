@@ -29,6 +29,7 @@ The project is built as a layered Spring Boot application and comes with an impo
   - A vehicle under maintenance cannot be reserved
   - Cancelling/terminating a reservation remains possible while the vehicle is under maintenance
 - JPA associations aligned with the case-study model
+- Association endpoints for employee/agency, vehicle/agency, and vehicle/equipment
 - SOLID/GoF design: dedicated vehicle validator, logging service, and Strategy-based pricing
 - Interactive Swagger UI documentation
 - Postman collection: 57 requests, 137 assertions, automatic cleanup
@@ -113,6 +114,26 @@ Each resource exposes:
 | `POST` | `/api/{resource}` | Create | `201` |
 | `PUT` | `/api/{resource}/{id}` | Update | `200` |
 | `DELETE` | `/api/{resource}/{id}` | Delete | `204` |
+
+### Association operations
+
+These endpoints manage the JPA relationships without deleting the related entities.
+
+| Method | Path | Description |
+|---|---|---|
+| `PUT` | `/api/employes/{idEmploye}/agence/{idAgence}` | Assign or transfer an employee to an agency |
+| `DELETE` | `/api/employes/{idEmploye}/agence` | Unassign an employee from their agency |
+| `PUT` | `/api/vehicules/{idVehicule}/agence/{idAgence}` | Assign or transfer a vehicle to an agency |
+| `PUT` | `/api/vehicules/{idVehicule}/equipements/{idEquipement}` | Add an equipment to a vehicle |
+| `DELETE` | `/api/vehicules/{idVehicule}/equipements/{idEquipement}` | Remove an equipment from a vehicle |
+
+All association operations return the updated resource with `200 OK`. A missing employee, vehicle, agency, or equipment returns `404 Not Found`.
+
+Example: assign a vehicle to the Sfax agency.
+
+```bash
+curl -X PUT http://localhost:8080/api/vehicules/1/agence/2
+```
 
 ### Tarification (Strategy)
 
@@ -263,7 +284,7 @@ The collection creates its own data, runs the negative tests, and deletes everyt
 ./mvnw clean package
 ```
 
-Current unit tests: **13** (vehicle validation and pricing strategies).
+Current unit tests: **21** (vehicle validation, pricing strategies, and association operations).
 
 The Maven build must pass before running the Postman collection.
 

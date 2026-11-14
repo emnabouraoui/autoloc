@@ -53,4 +53,17 @@ public class EmployeController {
     public void delete(@PathVariable Long id) {
         employeService.delete(id);
     }
+
+    @PutMapping("/{idEmploye}/agence/{idAgence}")
+    public EmployeResponseDTO affecterEmploye(@PathVariable Long idEmploye,
+                                              @PathVariable Long idAgence) {
+        employeService.affecterEmploye(idEmploye, idAgence);
+        return employeService.findById(idEmploye);
+    }
+
+    @DeleteMapping("/{idEmploye}/agence")
+    public EmployeResponseDTO desaffecterEmploye(@PathVariable Long idEmploye) {
+        employeService.desaffecterEmploye(idEmploye);
+        return employeService.findById(idEmploye);
+    }
 }

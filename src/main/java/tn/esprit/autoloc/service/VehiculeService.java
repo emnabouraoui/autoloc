@@ -91,9 +91,71 @@ public class VehiculeService {
         journalisationService.journaliserSuppressionVehicule(idVehicule, immatriculation);
     }
 
+    /**
+     * Affecte ou transfère un véhicule vers une agence.
+     */
+    @Transactional
+    public Vehicule affecterVehicule(Long idVehicule, Long idAgence) {
+        Vehicule vehicule = getEntity(idVehicule);
+        vehicule.setAgence(getAgence(idAgence));
+
+        Vehicule saved = vehiculeRepository.save(vehicule);
+        journalisationService.journaliserModificationVehicule(
+                saved.getIdVehicule(), saved.getImmatriculation());
+        return saved;
+    }
+
+    /**
+     * Ajoute un équipement au véhicule.
+     * L'opération est idempotente : un équipement déjà affecté n'est pas ajouté deux fois.
+     */
+    @Transactional
+    public Vehicule affecterEquipement(Long idVehicule, Long idEquipement) {
+        Vehicule vehicule = getEntity(idVehicule);
+        Equipement equipement = getEquipement(idEquipement);
+
+        boolean dejaAffecte = vehicule.getEquipements().stream()
+                .anyMatch(e -> e.getIdEquipement().equals(idEquipement));
+        if (!dejaAffecte) {
+            vehicule.getEquipements().add(equipement);
+        }
+
+        Vehicule saved = vehiculeRepository.save(vehicule);
+        journalisationService.journaliserModificationVehicule(
+                saved.getIdVehicule(), saved.getImmatriculation());
+        return saved;
+    }
+
+    /**
+     * Retire un équipement du véhicule.
+     * L'opération est idempotente : retirer un équipement absent ne provoque pas d'erreur.
+     */
+    @Transactional
+    public Vehicule desaffecterEquipement(Long idVehicule, Long idEquipement) {
+        Vehicule vehicule = getEntity(idVehicule);
+        getEquipement(idEquipement);
+        vehicule.getEquipements().removeIf(
+                e -> e.getIdEquipement().equals(idEquipement));
+
+        Vehicule saved = vehiculeRepository.save(vehicule);
+        journalisationService.journaliserModificationVehicule(
+                saved.getIdVehicule(), saved.getImmatriculation());
+        return saved;
+    }
+
     private Vehicule getEntity(Long id) {
         return vehiculeRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Vehicule", id));
+    }
+
+    private Agence getAgence(Long id) {
+        return agenceRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Agence", id));
+    }
+
+    private Equipement getEquipement(Long id) {
+        return equipementRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Equipement", id));
     }
 
     private void apply(Vehicule vehicule, VehiculeRequestDTO dto) {
@@ -107,17 +169,13 @@ public class VehiculeService {
         if (dto.agenceId() == null) {
             vehicule.setAgence(null);
         } else {
-            Agence agence = agenceRepository.findById(dto.agenceId())
-                    .orElseThrow(() -> new ResourceNotFoundException("Agence", dto.agenceId()));
-            vehicule.setAgence(agence);
+            vehicule.setAgence(getAgence(dto.agenceId()));
         }
 
         Set<Equipement> equipements = new HashSet<>();
         if (dto.equipementIds() != null) {
             for (Long equipementId : dto.equipementIds()) {
-                Equipement equipement = equipementRepository.findById(equipementId)
-                        .orElseThrow(() -> new ResourceNotFoundException("Equipement", equipementId));
-                equipements.add(equipement);
+                equipements.add(getEquipement(equipementId));
             }
         }
         vehicule.setEquipements(equipements);

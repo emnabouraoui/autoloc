@@ -53,18 +53,43 @@ public class EmployeService {
         employeRepository.delete(getEntity(id));
     }
 
+    /**
+     * Affecte un employé à une agence.
+     * Un employé ne peut appartenir qu'à une seule agence : l'affectation
+     * remplace donc l'agence précédente.
+     */
+    @Transactional
+    public Employe affecterEmploye(Long idEmploye, Long idAgence) {
+        Employe employe = getEntity(idEmploye);
+        Agence agence = getAgence(idAgence);
+        employe.setAgence(agence);
+        return employeRepository.save(employe);
+    }
+
+    /**
+     * Désaffecte un employé de son agence sans supprimer l'employé.
+     */
+    @Transactional
+    public Employe desaffecterEmploye(Long idEmploye) {
+        Employe employe = getEntity(idEmploye);
+        employe.setAgence(null);
+        return employeRepository.save(employe);
+    }
+
     private Employe getEntity(Long id) {
         return employeRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Employe", id));
+    }
+
+    private Agence getAgence(Long id) {
+        return agenceRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Agence", id));
     }
 
     private void apply(Employe employe, EmployeRequestDTO dto) {
         employe.setNom(dto.nom().trim());
         employe.setPrenom(dto.prenom().trim());
         employe.setRole(dto.role());
-
-        Agence agence = agenceRepository.findById(dto.agenceId())
-                .orElseThrow(() -> new ResourceNotFoundException("Agence", dto.agenceId()));
-        employe.setAgence(agence);
+        employe.setAgence(getAgence(dto.agenceId()));
     }
 }
